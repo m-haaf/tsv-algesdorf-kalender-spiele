@@ -1,7 +1,7 @@
 name: Update Kalender
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # manuelles Starten möglich
   schedule:
     - cron: "0 */6 * * *"  # alle 6 Stunden
 
@@ -15,13 +15,13 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"  # stabil für ics
+          python-version: "3.11"
 
       - name: Upgrade pip
         run: pip install --upgrade pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install requests ics pytz
 
       - name: Run script
         run: python script.py
