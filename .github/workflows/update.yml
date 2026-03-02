@@ -24,11 +24,12 @@ jobs:
         run: python script.py
         
       - name: Commit kalender.ics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add docs/kalender.ics
           git commit -m "Update kalender" || echo "No changes"
-          # Push über Token
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/m-haaf/tsv-algesdorf-kalender-spiele.git
+          git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/m-haaf/tsv-algesdorf-kalender-spiele.git
           git push origin main
