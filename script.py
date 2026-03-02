@@ -12,7 +12,6 @@ API_URL = f"https://www.fussball.de/api/team/matches/{TEAM_ID}?season={SAISON}"
 
 cal = Calendar()
 tz = pytz.timezone("Europe/Berlin")
-
 headers = {"User-Agent": "Mozilla/5.0"}
 
 try:
@@ -21,7 +20,7 @@ try:
     try:
         data = response.json()
     except requests.exceptions.JSONDecodeError:
-        print("⚠️ JSON konnte nicht geparst werden, API liefert keine Daten")
+        print("⚠️ JSON konnte nicht geparst werden")
         data = {"matches": []}
 except Exception as e:
     print("⚠️ Fehler beim Abrufen der API:", e)
@@ -32,13 +31,10 @@ for match in data.get("matches", []):
         match_id = match.get("matchId")
         date_str = match.get("matchDate")
         status = match.get("matchStatus")
-
         if not date_str:
             continue
 
-        start_dt = datetime.fromisoformat(
-            date_str.replace("Z", "+00:00")
-        ).astimezone(tz)
+        start_dt = datetime.fromisoformat(date_str.replace("Z", "+00:00")).astimezone(tz)
         end_dt = start_dt + timedelta(minutes=90)
 
         home = match.get("homeTeamName")
@@ -66,7 +62,6 @@ for match in data.get("matches", []):
 
         maps_query = urllib.parse.quote_plus(f"{location}, {address}")
         google_maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
-
         match_link = f"https://www.fussball.de/spiel/{match_id}"
 
         event = Event()
@@ -84,12 +79,11 @@ for match in data.get("matches", []):
         )
 
         cal.events.add(event)
-
     except Exception as e:
         print("⚠️ Fehler bei Spiel:", e)
 
 # Immer schreiben, auch wenn leer
-with open("kalender.ics", "w") as f:
+with open("docs/kalender.ics", "w") as f:
     f.writelines(cal)
 
 print("✅ kalender.ics wurde erstellt")
