@@ -82,7 +82,7 @@ for match in data.get("matches", []):
     except Exception as e:
         print("⚠️ Fehler bei Spiel:", e)
 
-# Immer schreiben, auch wenn leer
+# Statt "kalender.ics" im Root:
 with open("docs/kalender.ics", "w") as f:
     f.writelines(cal)
 
