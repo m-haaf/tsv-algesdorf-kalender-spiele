@@ -1,7 +1,7 @@
 name: Update Kalender
 
 on:
-  workflow_dispatch:   # manuelles Starten möglich
+  workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"  # alle 6 Stunden
 
@@ -17,14 +17,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Upgrade pip
-        run: pip install --upgrade pip
-
       - name: Install dependencies
         run: pip install requests ics pytz
 
       - name: Run script
         run: python script.py
 
-      - name: Show files
-        run: ls -la
+      - name: Commit kalender.ics
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/kalender.ics
+          git commit -m "Update kalender" || echo "No changes"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
