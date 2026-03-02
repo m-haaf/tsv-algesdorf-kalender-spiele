@@ -13,8 +13,19 @@ API_URL = f"https://www.fussball.de/api/team/matches/{TEAM_ID}?season={SAISON}"
 cal = Calendar()
 tz = pytz.timezone("Europe/Berlin")
 
-response = requests.get(API_URL)
-data = response.json()
+headers = {"User-Agent": "Mozilla/5.0"}
+
+try:
+    response = requests.get(API_URL, headers=headers, timeout=15)
+    response.raise_for_status()
+    try:
+        data = response.json()
+    except requests.exceptions.JSONDecodeError:
+        print("⚠️ JSON konnte nicht geparst werden, API liefert keine Daten")
+        data = {"matches": []}
+except Exception as e:
+    print("⚠️ Fehler beim Abrufen der API:", e)
+    data = {"matches": []}
 
 for match in data.get("matches", []):
     try:
@@ -28,23 +39,18 @@ for match in data.get("matches", []):
         start_dt = datetime.fromisoformat(
             date_str.replace("Z", "+00:00")
         ).astimezone(tz)
-
         end_dt = start_dt + timedelta(minutes=90)
 
         home = match.get("homeTeamName")
         away = match.get("awayTeamName")
-
         location = match.get("venueName", "Unbekannt")
         address = match.get("venueAddress", "")
         competition = match.get("competitionName", "")
-
         home_goals = match.get("homeGoals")
         away_goals = match.get("awayGoals")
 
-        # Heim/Auswärts
         heimstatus = "🏠 Heim" if home == TEAM_NAME else "🚌 Auswärts"
 
-        # Status + Ergebnis
         if status == "FINISHED" and home_goals is not None:
             result_text = f"{home_goals}:{away_goals}"
             status_icon = "✅"
@@ -58,24 +64,17 @@ for match in data.get("matches", []):
             result_text = "Geplant"
             status_icon = "📅"
 
-        # Google Maps URL (für LOCATION Feld!)
         maps_query = urllib.parse.quote_plus(f"{location}, {address}")
         google_maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
 
-        # Direktlink zu Fußball.de Spiel
         match_link = f"https://www.fussball.de/spiel/{match_id}"
 
         event = Event()
         event.uid = match_id
-
         event.name = f"{status_icon} {home} – {away} ({heimstatus})"
-
         event.begin = start_dt
         event.end = end_dt
-
-        # 🔥 LOCATION = Google Maps URL (öffnet direkt Google Maps)
         event.location = google_maps_url
-
         event.description = (
             f"Wettbewerb: {competition}\n"
             f"Status: {result_text}\n\n"
@@ -87,7 +86,10 @@ for match in data.get("matches", []):
         cal.events.add(event)
 
     except Exception as e:
-        print("Fehler:", e)
+        print("⚠️ Fehler bei Spiel:", e)
 
+# Immer schreiben, auch wenn leer
 with open("kalender.ics", "w") as f:
     f.writelines(cal)
+
+print("✅ kalender.ics wurde erstellt")
