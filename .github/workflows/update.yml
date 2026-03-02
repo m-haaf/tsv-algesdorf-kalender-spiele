@@ -29,6 +29,7 @@ jobs:
           git config user.email "actions@github.com"
           git add docs/kalender.ics
           git commit -m "Update kalender" || echo "No changes"
-          git push
+          # Push mit GITHUB_TOKEN
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/m-haaf/tsv-algesdorf-kalender-spiele.git
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
